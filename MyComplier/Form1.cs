@@ -73,8 +73,12 @@ namespace MyComplier
         {
             Txt_lex.Text = String.Empty;
             string sourceFilePath = @"E:\2.txt";
-            LexAnalyser lexAnalyser = new LexAnalyser(sourceFilePath, Txt_lex);
+            LexAnalyser lexAnalyser = new LexAnalyser(sourceFilePath, Txt_lex, Txt_error);
             lexAnalyser.Scan();
+            foreach (var item in lexAnalyser.Tokens_list)
+            {
+                Console.WriteLine(item.ToString());
+            }
         }
 
         /// <summary>
