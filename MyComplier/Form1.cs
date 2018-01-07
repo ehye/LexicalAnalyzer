@@ -72,13 +72,16 @@ namespace MyComplier
         private void LexingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Txt_lex.Text = String.Empty;
-            string sourceFilePath = @"E:\2.txt";
-            LexAnalyser lexAnalyser = new LexAnalyser(sourceFilePath, Txt_lex, Txt_error);
+            Txt_error.Text = String.Empty;
+            string source = Txt_input.Text;
+            //string source = @"E:\2.txt";
+            LexAnalyser lexAnalyser = new LexAnalyser(source, Txt_lex);
             lexAnalyser.Scan();
+
             foreach (var item in lexAnalyser.Tokens_list)
-            {
-                Console.WriteLine(item.ToString());
-            }
+                Txt_lex.Text += item.ToString();
+            foreach (var item in lexAnalyser.Error_list)
+                Txt_error.Text += item;
         }
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace MyComplier
             "float",
             "double",
             "boolean",
-            "Char",
+            "char",
             "const",
             "if",
             "else",
@@ -50,7 +50,10 @@ namespace MyComplier
             ":",
             "Integer",
             "Float",
-            "Double"
+            "Double",
+            "Boolean",
+            "Char",
+            "String"
         };
 
         public string Name { get => name; set => name = value; }
@@ -64,7 +67,7 @@ namespace MyComplier
             this.line = line;
             this.name = name;
             this.type = type;
-            if (type == "Float" || type == "Double" || type == "Char" || type == "Integer")
+            if (type == "Float" || type == "Double" || type == "Char" || type == "Integer" || type == "Boolean")
             {
                 tokenId = table.IndexOf(type);
             }
@@ -74,6 +77,6 @@ namespace MyComplier
             }
         }
 
-        public override string ToString() => $"{line}\t{name}\t{tokenId}\t{type}";
+        public override string ToString() => $"{line}\t{name}\t{tokenId}\t{type}\n";
     }
 }

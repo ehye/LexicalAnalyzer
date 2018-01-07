@@ -10,36 +10,39 @@ namespace MyComplier
     class LexAnalyser
     {
         // 保留字
-        private string[] reservedWords = new string[] {"if","then","auto","short", "int", "long",
-        "float","double","char" ,"struct","union","enum","typedef", "const","unsigned","signed",
-            "extern","register","static","volatile","void ","if","else","switch","case","for",
-            "do","while", "goto" ,"continue","break","default","sizeof","return"};
+        private string[] reservedWords = new string[] {"if","auto","short", "int", "long",
+            "float","double","char","struct","union","enum","typedef", "const","unsigned",
+            "signed","extern","register","static","volatile","void","if","else","switch",
+            "case","for","do","while", "goto" ,"continue","break","default","sizeof","return"};
         // 数学运算符
-        private string[] operatorSymbols = new string[] { "+", "-", "*", "/", "%", "=", "<", ">", "<=", ">=", "=", "-=", "+=", "*=", "/=" };
+        private string[] operatorSymbols = new string[] {"+","-","*","/","%","=","<",">",
+            "<=",">=","=","-=","+=","*=","/="};
         // 终结符
         private string[] delimiter = { "(", ")", "{", "}", "[", "]", "'", ";", "," };
 
         private List<Symbol> tokens_list;
+        private List<String> error_list;
 
         // 源程序文件输入流
-        private string sourceFilePath;
+        private string source;
         private RichTextBox Txt_lex;
         private RichTextBox Txt_error;
         // 代码行数
         private int lineCount = 0;
 
         internal List<Symbol> Tokens_list { get => tokens_list; private set => tokens_list = value; }
+        internal List<string> Error_list { get => error_list; set => error_list = value; }
 
         /// <summary>
         /// 创建词法分析器
         /// </summary>
-        /// <param name="sourceFilePath">源文件路径</param>
+        /// <param name="source">源文件路径</param>
         /// <param name="Txt_lex">输出到的控件</param>
-        public LexAnalyser(string sourceFilePath, RichTextBox Txt_lex, RichTextBox Txt_error)
+        public LexAnalyser(string source, RichTextBox Txt_lex)
         {
-            this.sourceFilePath = sourceFilePath;
+            this.source = source;
             this.Txt_lex = Txt_lex;
-            this.Txt_error = Txt_error;
+            //this.Txt_error = Txt_error;
         }
         /// <summary>
         /// 逐行扫描源程序代码
@@ -50,12 +53,19 @@ namespace MyComplier
             string sourceLine = "";
             string[] tokens;
             tokens_list = new List<Symbol>();
-
-            using (StreamReader sr = new StreamReader(sourceFilePath))
+            error_list = new List<string>();
+            //using (StreamReader sr = new StreamReader(source))
+            using (StringReader sr = new StringReader(source))
             {
                 while ((sourceLine = sr.ReadLine()) != null)
                 {
                     lineCount++;
+
+                    /*
+                     * status 0 = 分号
+                     * 1 = 初始
+                     * -1 = 有一个
+                     */
                     int delimiter_status = 1;
                     Txt_lex.Text += $"{lineCount}: {sourceLine}\n";
 
@@ -79,6 +89,7 @@ namespace MyComplier
                             delimiter_status *= -1;
                             Txt_lex.Text += $"    {token}    <delimiter>\n";
                             tokens_list.Add(new Symbol(lineCount, token, "Delimiter"));
+                            if (token == ";") delimiter_status = 0;
                         }
                         // 运算符
                         else if (IsOperator(token))
@@ -147,6 +158,7 @@ namespace MyComplier
                                     // 最后是分号
                                     if (token[i].Equals(";"))
                                     {
+                                        delimiter_status = 0;
                                         output = ";";
                                         Txt_lex.Text += $"    {output}    <delimiter>\n";
                                         tokens_list.Add(new Symbol(lineCount, output, "Delimiter"));
@@ -158,13 +170,26 @@ namespace MyComplier
                                     Console.WriteLine("无法识别");
                                 }
                             }
-                            if (!String.IsNullOrEmpty(output)) Txt_lex.Text += $"    {output}    <id>\n";
+                            if (IsReservedWord(output))
+                            {
+                                Txt_lex.Text += $"    {output}    <reserved word>\n";
+                                tokens_list.Add(new Symbol(lineCount, output, "ReservedWord"));
+                            }
+                            if (!String.IsNullOrEmpty(output))
+                            {
+                                Txt_lex.Text += $"    {output}    <id>\n";
+                                tokens_list.Add(new Symbol(lineCount, output, "ID"));
+                            }
                         }
                     }
 
-                    if (delimiter_status == 1)
+                    // 出错处理
+
+                    // 终结符出错
+                    if (delimiter_status == -1)
                     {
-                        Txt_error.Text += $"Error - Line {lineCount}: \n";
+                        //Txt_error.Text += $"Error - Line {lineCount}: \n";
+                        error_list.Add($"Error - Line {lineCount}: \n");
                         Console.WriteLine("出错");
                     }
                 }
